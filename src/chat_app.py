@@ -48,7 +48,7 @@ from app.tools.imageCreationTool import create_image
 from app.servers.mcp_inventory_server import mcp as inventory_mcp
 from services.handoff_service import HandoffService
 
-
+# load environment variables
 load_dotenv()
 env_vars = load_env_vars()
 validated_env_vars = validate_env_vars(env_vars)
