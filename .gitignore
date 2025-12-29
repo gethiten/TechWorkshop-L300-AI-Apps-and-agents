@@ -54,6 +54,7 @@ out/
 *.azuredevops
 
 # Github
-.github/
+# .github/  # Commented out to allow workflow files
+!.github/workflows/  # Track workflow files
 parameters.json
 .azure
