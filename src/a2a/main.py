@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -10,8 +11,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
 
-from api.chat import router as chat_router
-from agent.a2a_server import A2AServer
+# Add src directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from a2a.api.chat import router as chat_router
+# from a2a.agent.a2a_server import A2AServer  # Disabled due to missing a2a.server module
 
 # Load environment variables
 load_dotenv()
@@ -22,29 +26,20 @@ logger = logging.getLogger(__name__)
 
 # Global variables for cleanup
 httpx_client: httpx.AsyncClient = None
-a2a_server: A2AServer = None
+# a2a_server: A2AServer = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan"""
-    global httpx_client, a2a_server
+    global httpx_client
     
     # Startup
-    logger.info("Starting Zava Product Manager with A2A integration...")
+    logger.info("Starting Zava Product Manager...")
     httpx_client = httpx.AsyncClient(timeout=30)
     
-    # Initialize A2A server
-    host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", 8001))
-    a2a_server = A2AServer(httpx_client, host=host, port=port)
-    
-    # Mount A2A endpoints to the main app
-    app.mount("/a2a", a2a_server.get_starlette_app(), name="a2a")
-    
     logger.info(
-        f"A2A server mounted at / - Agent Card available at "
-        f"http://{host}:{port}/agent-card/"
+        f"Chat API available at http://localhost:8001/api/chat/message"
     )
     
     yield
@@ -87,13 +82,6 @@ async def read_root(request: Request):
 async def health_check():
     """Health check endpoint for Azure App Service"""
     return {"status": "healthy", "service": "zava-product-manager"}
-
-
-@app.get("/agent-card")
-async def get_agent_card():
-    """Expose the A2A Agent Card for discovery"""
-    if a2a_server:
-        return a2a_server._get_agent_card()
     return {"error": "A2A server not initialized"}
 
 
