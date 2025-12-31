@@ -1,3 +1,9 @@
+# Fix for Windows console encoding issues
+import sys
+import io
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 # Azure imports
 from azure.identity import DefaultAzureCredential
 from azure.ai.evaluation.red_team import RedTeam, RiskCategory, AttackStrategy
